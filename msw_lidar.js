@@ -142,22 +142,25 @@ function requireMLib() {
 }
 
 // library 추가
-let add_lib = {};
-try {
-  add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_bz_lidar.json', 'utf8'));
-  config.lib.push(add_lib);
+function addLib() {
+  let add_lib = {};
+  try {
+    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_bz_lidar.json', 'utf8'));
+    config.lib.push(add_lib);
+  }
+  catch (e) {
+    add_lib = {
+      name: 'lib_devtool_test',
+      target: 'armv6',
+      description: "[name] [portnum] [baudrate]",
+      scripts: './lib_devtool_test /dev/ttyUSB4 115200',
+      data: ['Test'],
+      control: ['Control_Test']
+    };
+    config.lib.push(add_lib);
+  }
 }
-catch (e) {
-  add_lib = {
-    name: 'lib_devtool_test',
-    target: 'armv6',
-    description: "[name] [portnum] [baudrate]",
-    scripts: './lib_devtool_test /dev/ttyUSB4 115200',
-    data: ['Test'],
-    control: ['Control_Test']
-  };
-  config.lib.push(add_lib);
-}
+
 function init() {
   if(config.lib.length > 0) {
     for(let idx in config.lib) {
@@ -365,6 +368,16 @@ function parseControlMission(topic, str_message) {
 }
 
 function parseFcData(topic, str_message) {
+  let topic_arr = topic.split('/');
+  if(topic_arr[topic_arr.length-1] === 'system_time') {
+    let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[0]; // 'system_time'
+    msw_mqtt_client.publish(_topic, str_message);
+  }
+  else if (topic_arr[topic_arr.length-1] === 'timesync') {
+    let _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[0].control[1]; // 'timesync'
+  }
+  else {
+  }
 
 
 }
